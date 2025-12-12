@@ -1,0 +1,5 @@
+{
+  "name": "Oliebollen Toernooi Scorebord",
+  "description": "Real-time scorebord en toernooimanager voor het Oliebollenvolleybal toernooi. Beheer scores, teams en bekijk de live stand en het speelschema.",
+  "requestFramePermissions": []
+}
