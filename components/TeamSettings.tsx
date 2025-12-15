@@ -1,36 +1,67 @@
 import React, { useState } from 'react';
 import { Team } from '../types';
-import { Edit2, Check, Users } from 'lucide-react';
+import { Edit2, Check, Users, AlertTriangle, RotateCcw } from 'lucide-react';
 
 interface TeamSettingsProps {
   teams: Team[];
   onUpdateTeamName: (id: string, name: string) => void;
+  onReset: () => void;
 }
 
-const TeamSettings: React.FC<TeamSettingsProps> = ({ teams, onUpdateTeamName }) => {
+const TeamSettings: React.FC<TeamSettingsProps> = ({ teams, onUpdateTeamName, onReset }) => {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="p-6 border-b border-gray-100 flex items-center gap-3">
-        <div className="bg-purple-100 p-2 rounded-full text-purple-600">
-            <Users size={24} />
-        </div>
-        <div>
-            <h2 className="text-lg font-bold text-gray-900">Team Namen</h2>
-            <p className="text-sm text-gray-500">Pas hier de namen van de deelnemende teams aan.</p>
-        </div>
-      </div>
-      <div className="divide-y divide-gray-100">
-        {['A', 'B', 'C', 'D'].map(group => (
-          <div key={group} className="p-4">
-             <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 ml-2">Poule {group}</h3>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {teams.filter(t => t.group === group).map(team => (
-                  <TeamInput key={team.id} team={team} onSave={onUpdateTeamName} />
-                ))}
-             </div>
+    <div className="space-y-8">
+      
+      {/* Team Names Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b border-gray-100 flex items-center gap-3">
+          <div className="bg-purple-100 p-2 rounded-full text-purple-600">
+              <Users size={24} />
           </div>
-        ))}
+          <div>
+              <h2 className="text-lg font-bold text-gray-900">Team Namen</h2>
+              <p className="text-sm text-gray-500">Pas hier de namen van de deelnemende teams aan.</p>
+          </div>
+        </div>
+        <div className="divide-y divide-gray-100">
+          {['A', 'B', 'C', 'D'].map(group => (
+            <div key={group} className="p-4">
+               <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 ml-2">Poule {group}</h3>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {teams.filter(t => t.group === group).map(team => (
+                    <TeamInput key={team.id} team={team} onSave={onUpdateTeamName} />
+                  ))}
+               </div>
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* Danger Zone / Reset Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-red-100 overflow-hidden">
+        <div className="p-6">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+             <div className="bg-red-50 p-3 rounded-full text-red-500 shrink-0">
+                <AlertTriangle size={24} />
+             </div>
+             <div className="flex-1">
+                <h3 className="text-lg font-bold text-gray-900">Toernooi Resetten</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Hiermee worden alle uitslagen gewist en worden de teams opnieuw willekeurig ingedeeld over de poules. 
+                  <span className="font-semibold text-red-600 block mt-1">Let op: Dit kan niet ongedaan worden gemaakt!</span>
+                </p>
+             </div>
+             <button 
+                onClick={onReset}
+                className="w-full sm:w-auto px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm"
+             >
+                <RotateCcw size={18} />
+                <span>Reset Data</span>
+             </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };

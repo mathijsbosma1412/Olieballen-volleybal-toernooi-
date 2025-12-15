@@ -14,6 +14,18 @@ const App: React.FC = () => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
   const [standings, setStandings] = useState<Record<string, Standing[]>>({});
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  // Monitor Online/Offline Status
+  useEffect(() => {
+    const handleStatusChange = () => setIsOffline(!navigator.onLine);
+    window.addEventListener('online', handleStatusChange);
+    window.addEventListener('offline', handleStatusChange);
+    return () => {
+      window.removeEventListener('online', handleStatusChange);
+      window.removeEventListener('offline', handleStatusChange);
+    };
+  }, []);
 
   // Initialize Data
   useEffect(() => {
@@ -21,8 +33,16 @@ const App: React.FC = () => {
     const storedMatches = localStorage.getItem('oliebollen_matches_v4');
 
     if (storedTeams && storedMatches) {
-      setTeams(JSON.parse(storedTeams));
-      setMatches(JSON.parse(storedMatches));
+      try {
+        setTeams(JSON.parse(storedTeams));
+        setMatches(JSON.parse(storedMatches));
+      } catch (error) {
+        console.error("Error loading stored data, resetting:", error);
+        const initialTeams = generateInitialTeams();
+        const initialMatches = generateInitialMatches(initialTeams);
+        setTeams(initialTeams);
+        setMatches(initialMatches);
+      }
     } else {
       const initialTeams = generateInitialTeams();
       const initialMatches = generateInitialMatches(initialTeams);
@@ -70,9 +90,22 @@ const App: React.FC = () => {
     setTeams(prev => prev.map(t => t.id === teamId ? { ...t, name: newName } : t));
   };
 
+  const handleReset = () => {
+    if (window.confirm("WEET JE HET ZEKER?\n\nHiermee verwijder je alle scores en wordt de toernooi-indeling opnieuw gehusseld.\nDit kan niet ongedaan worden gemaakt.")) {
+      const newTeams = generateInitialTeams();
+      const newMatches = generateInitialMatches(newTeams);
+      setTeams(newTeams);
+      setMatches(newMatches);
+      
+      // We don't strictly need to clear localStorage manually here because the 
+      // useEffect hooks for persistence will fire immediately after setTeams/setMatches
+      // and overwrite the stored data with the new clean data.
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-      <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+      <Navigation activeTab={activeTab} onTabChange={setActiveTab} isOffline={isOffline} />
       
       <main className="max-w-7xl mx-auto px-4 py-6 md:px-8">
         
@@ -99,7 +132,7 @@ const App: React.FC = () => {
             {activeTab === Tab.TEAMS && (
                 <div>
                    <h2 className="text-2xl font-bold text-gray-900">Team Beheer</h2>
-                   <p className="text-gray-500">Wijzig teamnamen.</p>
+                   <p className="text-gray-500">Wijzig teamnamen of reset het toernooi.</p>
                 </div>
             )}
         </div>
@@ -130,6 +163,7 @@ const App: React.FC = () => {
             <TeamSettings 
               teams={teams} 
               onUpdateTeamName={handleUpdateTeamName} 
+              onReset={handleReset}
             />
           )}
 
@@ -165,7 +199,7 @@ const updateKnockoutMatches = (currentMatches: Match[], currentStandings: Record
             return match.teamAId; // In case of draw, take A (should be sudden death ideally)
         }
         return defaultId;
-    }
+    };
 
     // 1. Update SF1 (A vs B)
     const winnerA = getWinnerId('A');
