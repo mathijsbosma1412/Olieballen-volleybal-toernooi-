@@ -91,4 +91,16 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange, isOffli
             </div>
             <span className="font-bold text-gray-800">Oliebollen Toernooi</span>
         </div>
-        <div className="flex items-center gap-1.5 text-xs
+        <div className="flex items-center gap-1.5 text-xs font-medium">
+            {isOffline ? (
+                <WifiOff size={14} className="text-orange-500" />
+            ) : (
+                <Save size={14} className="text-green-500" />
+            )}
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Navigation;
